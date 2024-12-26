@@ -1,0 +1,41 @@
+// Package logs handles logging actions and operations in the application.
+package logs
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+)
+
+// LogAction logs the given action with a timestamp to the logs/actions.log file.
+func LogAction(action string) error {
+	// Define the log file path
+	logFilePath := filepath.Join("logs", "actions.log")
+
+	// Ensure the logs directory exists
+	err := os.MkdirAll(filepath.Dir(logFilePath), os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create logs directory: %w", err)
+	}
+
+	// Open the log file for appending
+	file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
+	}
+	defer file.Close()
+
+	// Get the current timestamp
+	timestamp := time.Now().Format(time.RFC3339)
+
+	// Prepare the log entry
+	logEntry := fmt.Sprintf("[%s] %s\n", timestamp, action)
+
+	// Write the log entry to the file
+	if _, err := file.WriteString(logEntry); err != nil {
+		return fmt.Errorf("failed to write to log file: %w", err)
+	}
+
+	return nil
+}
